@@ -32,7 +32,7 @@ class Game(QGraphicsView):
 
     def mousePressEvent(self, event):
         item = self.scene.itemAt(event.pos(), self.transform())
-        if item == self.selected_cell:
+        if item == self.selected_cell and self.selected_cell is not None:
             self.selected_cell.change_border_color("black")
             self.selected_cell = None
         elif isinstance(item, Cell) and item.owner == "player":
