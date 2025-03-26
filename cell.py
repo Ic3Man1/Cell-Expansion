@@ -7,22 +7,26 @@ class Cell(QGraphicsEllipseItem):
         super().__init__(QRectF(x, y, radius * 2, radius * 2))
         self.setBrush(QBrush(QColor("green" if owner == "player" else "red")))
         self.owner = owner
-        self.units = 10
-        self.position = self.pos()
+        self.hp = 10
         self.setZValue(1)
+        self.con_to = set()
 
-        self.pen = QPen(QColor("black"))  # Początkowy kolor obwódki
+        self.dmg_taken = 0
+        self.hp_supply = 0
+        self.attack_dmg = 0
+
+        self.pen = QPen(QColor("black")) 
         self.pen.setWidth(3)
-        self.setPen(self.pen)  # Ustawiamy pióro na komórce
+        self.setPen(self.pen)  
 
-        self.health_points = QGraphicsTextItem(str(self.units), self)
-        self.health_points.setPos(self.boundingRect().center() - self.health_points.boundingRect().center())
-        self.health_points.setDefaultTextColor(QColor("black"))
+        self.hp_points_label = QGraphicsTextItem(str(self.hp), self)
+        self.hp_points_label.setPos(self.boundingRect().center() - self.hp_points_label.boundingRect().center())
+        self.hp_points_label.setDefaultTextColor(QColor("black"))
 
     def grow(self):
         if self.owner:
-            self.units += 1
-            self.health_points.setPlainText(str(self.units))
+            self.hp = self.hp + 1 + self.hp_supply - self.dmg_taken - self.attack_dmg
+            self.hp_points_label.setPlainText(str(self.hp))
 
     def change_border_color(self, color):
         self.pen.setColor(QColor(color))
