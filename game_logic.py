@@ -30,16 +30,22 @@ def unselect_cell(cell):
     cell.change_border_color("black")
     return None
 
-def attack_cell(selected_cell, item):
-    selected_cell.change_border_color("black")
-    #draw_line_between_cells(selected_cell.scene(), selected_cell, item)
-    attack_line = Attack(selected_cell, item)
-    scene = selected_cell.scene()
+def attack_cell(attacker, defender):
+    attacker.change_border_color("black")
+    #draw_line_between_cells(attacker.scene(), attacker, defender)
+    attack_line = Attack(attacker, defender)
+    scene = attacker.scene()
     scene.addItem(attack_line)
-    selected_cell.attack_dmg += 1
-    item.dmg_taken += 2
-    selected_cell.con_to.add(item)
+    attacker.attack_dmg += 1
+    defender.dmg_taken += 2
+    attacker.con_to.add(defender)
+    defender.con_to.add(attacker)
     return None
 
-def stop_attack():
-    pass
+def stop_attack(item):
+    item.attacker.attack_dmg -= 1
+    item.defender.dmg_taken -= 2
+    item.attacker.con_to.discard(item.defender)
+    item.defender.con_to.discard(item.attacker)
+    scene = item.attacker.scene()
+    scene.removeItem(item)
