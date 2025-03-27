@@ -4,6 +4,7 @@ from PyQt5.QtGui import QBrush, QColor, QPen
 from PyQt5.QtWidgets import QGraphicsLineItem
 from cell import Cell
 from game_logic import *
+from attack import Attack
 
 class Game(QGraphicsView):
     def __init__(self):
@@ -43,3 +44,5 @@ class Game(QGraphicsView):
             self.selected_cell = select_cell(item)
         elif isinstance(item, Cell) and item.owner == "enemy" and self.selected_cell is not None and item not in self.selected_cell.con_to:
             self.selected_cell = attack_cell(self.selected_cell, item)
+        elif isinstance(item, QGraphicsLineItem):
+            print("zaznaczono linie")
