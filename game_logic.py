@@ -44,8 +44,24 @@ def attack_cell(attacker, defender):
 
 def stop_attack(item):
     item.attacker.attack_dmg -= 1
-    item.defender.dmg_taken -= 2
+    if item.attacker.owner != item.defender.owner:
+        item.defender.dmg_taken -= 2
+    else:
+        item.defender.hp_supply -= 2
+
     item.attacker.con_to.discard(item.defender)
     item.defender.con_to.discard(item.attacker)
     scene = item.attacker.scene()
     scene.removeItem(item)
+
+def support_cell(cell, item):
+    cell.change_border_color("black")
+    support_line = Attack(cell, item)
+    scene = cell.scene()
+    scene.addItem(support_line)
+    cell.attack_dmg += 1
+    item.hp_supply += 2
+    cell.con_to.add(item)
+    item.con_to.add(cell)
+    return None
+

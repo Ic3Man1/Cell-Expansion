@@ -45,6 +45,8 @@ class Game(QGraphicsView):
             self.selected_cell = select_cell(item)
         elif isinstance(item, Cell) and item.owner == "enemy" and self.selected_cell is not None and item not in self.selected_cell.con_to:
             self.selected_cell = attack_cell(self.selected_cell, item)
+        elif isinstance(item, Cell) and item.owner == "player" and self.selected_cell is not None and item not in self.selected_cell.con_to:
+            self.selected_cell = support_cell(self.selected_cell, item)
         elif isinstance(item, Attack):
             stop_attack(item)
 

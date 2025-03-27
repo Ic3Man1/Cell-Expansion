@@ -4,7 +4,7 @@ from PyQt5.QtCore import QRectF, QPointF, Qt
 from cell import Cell
 
 class Attack(QGraphicsLineItem):
-    def __init__(self, atk_cell, def_cell):
+    def __init__(self, atk_cell, def_cell, color1="green", color2="green"):
         super().__init__()
 
         self.atk_center = atk_cell.boundingRect().center() + atk_cell.pos()
@@ -14,6 +14,9 @@ class Attack(QGraphicsLineItem):
         self.attacker = atk_cell
         self.defender = def_cell
 
+        self.line1_color = color1
+        self.line2_color = color2
+
         self.scene = atk_cell.scene()
         self.setLine(self.atk_center.x(), self.atk_center.y(), self.def_center.x(), self.def_center.y())
 
@@ -22,13 +25,13 @@ class Attack(QGraphicsLineItem):
         self.setPen(self.pen)
 
     def paint(self, painter, option, widget):
-        pen = QPen(QColor("green"))
+        pen = QPen(QColor(self.line1_color))
         pen.setWidth(10)
         painter.setPen(pen)
 
         painter.drawLine(self.atk_center, self.mid)
 
-        pen = QPen(QColor("green"))
+        pen = QPen(QColor(self.line2_color))
         pen.setWidth(10)
         painter.setPen(pen)
 
