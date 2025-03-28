@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QGraphicsLineItem, QGraphicsTextItem
 from PyQt5.QtGui import QBrush, QColor, QPen, QPainterPath, QPainterPathStroker
-from PyQt5.QtCore import QRectF, QPointF, Qt
+from PyQt5.QtCore import QRectF, QPointF, Qt, QLineF
 from cell import Cell
 
 class Attack(QGraphicsLineItem):
@@ -10,6 +10,9 @@ class Attack(QGraphicsLineItem):
         self.atk_center = atk_cell.boundingRect().center() + atk_cell.pos()
         self.def_center = def_cell.boundingRect().center() + def_cell.pos()
         self.mid = QPointF((self.atk_center.x() + self.def_center.x()) / 2, (self.atk_center.y() + self.def_center.y()) / 2)
+
+        # self.line = QLineF(self.atk_center, self.def_center)
+        # self.distance = self.line.length()
 
         self.attacker = atk_cell
         self.defender = def_cell
