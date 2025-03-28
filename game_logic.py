@@ -80,9 +80,6 @@ def separate(attacks, item, turn):
 def merge_cells(attacker, defender):
     color = "green" if attacker.owner == "player" else "red"
     distance = calc_distance(attacker, defender)
-    if distance >= attacker.hp:
-        show_fading_message("Distance between cells to long")
-        return attacker
     attacker.change_border_color("black")
     attack_line = Attack(attacker, defender, color, color)
 
@@ -97,15 +94,11 @@ def merge_cells(attacker, defender):
         defender.hp_supply += 2
 
     attacker.con_to.add(defender)
-    #defender.con_to.add(attacker)
 
     return None, attack_line
 
 def remerge_cells(merge, attacker, defender):
-    distance = round(calc_distance(attacker, defender)/2)
-    if distance >= attacker.hp:
-        show_fading_message("Distance between cells to long")
-        return attacker
+    distance = int(round(calc_distance(attacker, defender)/2))
     attacker.change_border_color("black")
     attacker.hp -= distance
     defender.hp += distance
@@ -125,16 +118,20 @@ def remerge_cells(merge, attacker, defender):
 def merge(attacks, selected_cell, item, turn):
     for i in attacks:
         if i.attacker == item and i.defender == selected_cell:
-            if i.attacker.owner != i.defender.owner:
+            if i.attacker.owner != i.defender.owner and int(round(calc_distance(selected_cell, item)/2)) < selected_cell.hp:
                 cell = remerge_cells(i, selected_cell, item)
                 turn = switch_turn(turn)
                 return cell, turn
             else:
                 show_fading_message("Mismove")
                 return selected_cell, turn
-    cell, attack = merge_cells(selected_cell, item)
-    attacks.append(attack)
-    turn = switch_turn(turn)
+    if calc_distance(selected_cell, item) < selected_cell.hp:
+        cell, attack = merge_cells(selected_cell, item)
+        attacks.append(attack)
+        turn = switch_turn(turn)
+    else:
+        show_fading_message("Mismove")
+        return selected_cell, turn
     return cell, turn
 
 def calc_distance(attacker, defender):

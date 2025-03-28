@@ -18,18 +18,36 @@ class Game(QGraphicsView):
         self.selected_cell = None
         self.create_cells()
 
+        self.last_turn = "green"
         self.turn = "green"
-        
+        self.time_left = 15
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_game)
+        self.timer.timeout.connect(self.update_turn_display)
         self.timer.start(1000)
 
-        self.turn_background = QGraphicsRectItem(0, 0, 110, 22)
+        self.turn_timer = QTimer()
+        self.turn_timer.timeout.connect(self.change_turn)
+        self.turn_timer.start(15000)
+
+        self.turn_background = QGraphicsRectItem(0, 0, 130, 35)
         self.scene.addItem(self.turn_background)
-        self.turn_label = QGraphicsTextItem("Player's Turn: {}".format(self.turn.capitalize()))
+        self.turn_label = QGraphicsTextItem("Player's Turn: {}\nTurn ends in: {} seconds".format(
+            self.turn.capitalize(),
+            str(self.time_left)
+        ))
         self.turn_label.setPos(0, 0)
         self.scene.addItem(self.turn_label)
         self.update_turn_display() 
+    
+    def change_turn(self):
+        if self.turn == "green":
+            self.turn = "red"
+        else:
+            self.turn = "green"
+        self.time_left = 15
+        self.update_turn_display()
 
     def create_cells(self):
         player_cell = Cell(100, 100, 30, "player")
@@ -44,19 +62,33 @@ class Game(QGraphicsView):
 
     def update_game(self):
         for cell in self.cells:
+            if cell.hp <= 0:
+                new_owner = "enemy" if cell.owner == "player" else "player"
+                cell.owner = new_owner
+                cell.update()
             cell.grow()
+        if self.last_turn != self.turn:
+            self.time_left = 15
+            self.turn_timer.start(15000)
+            self.last_turn = self.turn
+            self.update_turn_display()
+        else:
+            self.time_left -= 1
+        
 
     def update_turn_display(self):
         if self.turn == "green":
-            self.turn_background.setBrush(QBrush(QColor("white")))  # Jasne tło dla zielonej tury
+            self.turn_background.setBrush(QBrush(QColor("white")))  
             self.turn_label.setDefaultTextColor(QColor("green"))
         else:
-            self.turn_background.setBrush(QBrush(QColor("black")))  # Ciemne tło dla czerwonej tury
+            self.turn_background.setBrush(QBrush(QColor("black")))
             self.turn_label.setDefaultTextColor(QColor("red"))
-    
-        self.turn_label.setPlainText("Player's Turn: {}".format(self.turn.capitalize()))
+        
+        self.turn_label.setPlainText("Player's Turn: {}\nTurn ends in: {} seconds".format(
+            self.turn.capitalize(),
+            str(self.time_left)
+        ))
             
-
     def mousePressEvent(self, event):
         item = self.scene.itemAt(event.pos(), self.transform())
         if item == self.selected_cell and self.selected_cell is not None:
@@ -64,10 +96,12 @@ class Game(QGraphicsView):
         elif isinstance(item, Cell) and self.selected_cell is None:
             self.selected_cell = select_cell(item, self.turn)
         elif isinstance(item, Cell) and self.selected_cell is not None and item not in self.selected_cell.con_to:
+            self.last_turn = self.turn
             self.selected_cell, self.turn = merge(self.attacks, self.selected_cell, item, self.turn)
             self.update_turn_display()
             self.scene.update()
         elif isinstance(item, Attack):
+            self.last_turn = self.turn
             self.turn = separate(self.attacks, item, self.turn)
             self.update_turn_display()
             self.scene.update()

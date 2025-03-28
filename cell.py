@@ -8,7 +8,7 @@ class Cell(QGraphicsEllipseItem):
         self.color = "green" if owner == "player" else "red"
         self.setBrush(QBrush(QColor(self.color)))
         self.owner = owner
-        self.hp = 100
+        self.hp = 10
         self.setZValue(1)
         self.con_to = set()
 
@@ -32,3 +32,10 @@ class Cell(QGraphicsEllipseItem):
     def change_border_color(self, color):
         self.pen.setColor(QColor(color))
         self.setPen(self.pen)
+
+    def update(self):
+        if self.owner == "player":
+            self.setBrush(QBrush(QColor("green")))
+        else:
+            self.setBrush(QBrush(QColor("red")))
+        self.dmg_taken, self.hp_supply = self.hp_supply, self.dmg_taken
