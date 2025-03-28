@@ -14,8 +14,11 @@ class Game(QGraphicsView):
         self.setScene(self.scene)
         
         self.cells = []
+        self.attacks = []
         self.selected_cell = None
         self.create_cells()
+
+        self.turn = "green"
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_game)
@@ -40,11 +43,13 @@ class Game(QGraphicsView):
         item = self.scene.itemAt(event.pos(), self.transform())
         if item == self.selected_cell and self.selected_cell is not None:
             self.selected_cell = unselect_cell(self.selected_cell)
-        elif isinstance(item, Cell) and item.owner == "player" and self.selected_cell is None:
-            self.selected_cell = select_cell(item)
+        elif isinstance(item, Cell) and self.selected_cell is None:
+            self.selected_cell = select_cell(item, self.turn)
         elif isinstance(item, Cell) and self.selected_cell is not None and item not in self.selected_cell.con_to:
-            self.selected_cell = merge_cells(self.selected_cell, item)
+            self.selected_cell, self.turn = merge(self.attacks, self.selected_cell, item, self.turn)
+            self.scene.update()
         elif isinstance(item, Attack):
-            stop_attack(item)
+            self.turn = separate(self.attacks, item, self.turn)
+            self.scene.update()
 
     

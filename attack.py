@@ -11,8 +11,8 @@ class Attack(QGraphicsLineItem):
         self.def_center = def_cell.boundingRect().center() + def_cell.pos()
         self.mid = QPointF((self.atk_center.x() + self.def_center.x()) / 2, (self.atk_center.y() + self.def_center.y()) / 2)
 
-        # self.line = QLineF(self.atk_center, self.def_center)
-        # self.distance = self.line.length()
+        self.help_line = QLineF(self.atk_center, self.def_center)
+        self.length = int(self.help_line.length()/20)
 
         self.attacker = atk_cell
         self.defender = def_cell

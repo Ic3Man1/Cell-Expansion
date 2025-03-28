@@ -5,9 +5,10 @@ from PyQt5.QtCore import QRectF
 class Cell(QGraphicsEllipseItem):
     def __init__(self, x, y, radius, owner):
         super().__init__(QRectF(x, y, radius * 2, radius * 2))
-        self.setBrush(QBrush(QColor("green" if owner == "player" else "red")))
+        self.color = "green" if owner == "player" else "red"
+        self.setBrush(QBrush(QColor(self.color)))
         self.owner = owner
-        self.hp = 10
+        self.hp = 100
         self.setZValue(1)
         self.con_to = set()
 
