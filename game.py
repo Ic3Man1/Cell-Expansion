@@ -63,9 +63,9 @@ class Game(QGraphicsView):
     def update_game(self):
         for cell in self.cells:
             if cell.hp <= 0:
-                new_owner = "enemy" if cell.owner == "player" else "player"
-                cell.owner = new_owner
+                self.attacks = retrieve_cell(cell, self.attacks)
                 cell.update()
+                self.scene.update()
             cell.grow()
         if self.last_turn != self.turn:
             self.time_left = 15

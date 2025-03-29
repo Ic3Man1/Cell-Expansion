@@ -16,6 +16,7 @@ class Cell(QGraphicsEllipseItem):
         self.hp = 10
         self.setZValue(1)
         self.con_to = set()
+        self.whos_con = set()
 
         self.dmg_taken = 0
         self.hp_supply = 0
@@ -45,4 +46,4 @@ class Cell(QGraphicsEllipseItem):
         else:
             self.color = "red"
             self.setBrush(QBrush(QPixmap(":/red_cell")))
-        self.dmg_taken, self.hp_supply = self.hp_supply, self.dmg_taken
+        #self.dmg_taken, self.hp_supply = self.hp_supply, self.dmg_taken

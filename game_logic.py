@@ -28,7 +28,7 @@ def stop_attack(item):
         item.defender.hp += int(round(item.length/2))
 
     item.attacker.con_to.discard(item.defender)
-    #item.defender.con_to.discard(item.attacker)
+    item.defender.whos_con.discard(item.attacker)
 
     scene = item.attacker.scene()
     scene.removeItem(item)
@@ -43,12 +43,14 @@ def cut_attack(item, turn):
             item.defender.dmg_taken -= 2
             item.attacker.hp += int(round(item.length/2))
             item.attacker.con_to.discard(item.defender)
+            item.defender.whos_con.discard(item.attacker)
             item.attacker, item.defender = item.defender, item.attacker
         else:
             item.line2_color = "red"
             item.defender.attack_dmg -= 1
             item.attacker.dmg_taken -= 2
             item.defender.con_to.discard(item.attacker)
+            item.attacker.whos_con.discard(item.defender)
             item.defender.hp += int(round(item.length/2))
     else:
         if item.attacker.owner == "enemy":
@@ -57,12 +59,14 @@ def cut_attack(item, turn):
             item.defender.dmg_taken -= 2
             item.attacker.hp += int(round(item.length/2))
             item.attacker.con_to.discard(item.defender)
+            item.defender.whos_con.discard(item.attacker)
             item.attacker, item.defender = item.defender, item.attacker
         else:
             item.line2_color = "green"
             item.defender.attack_dmg -= 1
             item.attacker.dmg_taken -= 2
             item.defender.con_to.discard(item.attacker)
+            item.attacker.whos_con.discard(item.defender)
             item.defender.hp += int(round(item.length/2))
 
 def separate(attacks, item, turn):
@@ -94,6 +98,7 @@ def merge_cells(attacker, defender):
         defender.hp_supply += 2
 
     attacker.con_to.add(defender)
+    defender.whos_con.add(attacker)
 
     return None, attack_line
 
@@ -109,6 +114,7 @@ def remerge_cells(merge, attacker, defender):
         defender.hp_supply += 2
 
     attacker.con_to.add(defender)
+    defender.whos_con.add(attacker)
 
     color = select_color(attacker)
     merge.line2_color = color
@@ -153,6 +159,29 @@ def switch_turn(turn):
         return "red"
     else:
         return "green"
+    
+def retrieve_cell(cell, attacks):
+    for attack in attacks:
+        if attack.attacker == cell and attack.defender not in cell.whos_con:
+            #print("test2")
+            attack.line1_color = "red" if attack.attacker.owner == "player" else "green"
+            attack.line2_color = "red" if attack.attacker.owner == "player" else "green"
+        elif (attack.attacker == cell or attack.defender == cell):
+            #print("test")
+            cut_attack(attack, cell.color)
+            attack.line1_color = "green" if attack.attacker.owner == "player" else "red"
+            attack.line2_color = "green" if attack.attacker.owner == "player" else "red"
+
+        if attack.attacker.owner == attack.defender.owner and (attack.attacker == cell or attack.defender == cell):
+            attack.defender.hp_supply -= 2
+            attack.defender.dmg_taken += 2
+        elif (attack.attacker == cell or attack.defender == cell):
+            attack.defender.hp_supply += 2
+            attack.defender.dmg_taken -= 2
+        
+    
+    cell.owner = "enemy" if cell.owner == "player" else "player"
+    return attacks
 
 def show_fading_message(message, duration=1500):
     label = QLabel(message)
