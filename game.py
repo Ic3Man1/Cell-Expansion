@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsTextItem, QGraphicsRectItem
 from PyQt5.QtCore import QTimer, QPointF
 from PyQt5.QtGui import QBrush, QColor, QPen
-from PyQt5.QtWidgets import QGraphicsLineItem
+from PyQt5.QtWidgets import QGraphicsLineItem, QPushButton, QHBoxLayout, QVBoxLayout
 from cell import Cell
 from game_logic import *
 from attack import Attack
+from levels import *
+from buttonstyles import *
 
 class Game(QGraphicsView):
     def __init__(self):
@@ -16,7 +18,6 @@ class Game(QGraphicsView):
         self.cells = []
         self.attacks = []
         self.selected_cell = None
-        self.create_cells()
 
         self.last_turn = "green"
         self.turn = "green"
@@ -32,7 +33,7 @@ class Game(QGraphicsView):
         self.turn_timer = QTimer()
         self.turn_timer.timeout.connect(self.change_turn)
         self.turn_timer.start(15000)
-
+        
         self.turn_background = QGraphicsRectItem(0, 0, 130, 35)
         self.scene.addItem(self.turn_background)
         self.turn_label = QGraphicsTextItem("Player's Turn: {}\nTurn ends in: {} seconds".format(
@@ -42,7 +43,47 @@ class Game(QGraphicsView):
         self.turn_label.setPos(0, 0)
         self.scene.addItem(self.turn_label)
         self.update_turn_display() 
+
+        self.create_cells(level1)
+        self.init_ui()
+
+    def init_ui(self):
+        main_layout = QVBoxLayout()
+        button_layout = QHBoxLayout()
+        main_layout.addStretch(1)
+
+        possible_move_button = QPushButton('Show possible moves', self)
+        possible_move_button.clicked.connect(self.test)
+        possible_move_button.setStyleSheet(possible_moves_style)
+        button_layout.addWidget(possible_move_button)
+
+        best_move_button = QPushButton('Show best move', self)
+        best_move_button.clicked.connect(self.test)
+        best_move_button.setStyleSheet(best_move_style)
+        button_layout.addWidget(best_move_button)
+
+        level1_button = QPushButton('Level 1', self)
+        level1_button.clicked.connect(lambda: self.create_cells(level1))
+        level1_button.setStyleSheet(level_style)
+        button_layout.addWidget(level1_button)
+
+        level2_button = QPushButton('Level 2', self)
+        level2_button.clicked.connect(lambda: self.create_cells(level2))
+        level2_button.setStyleSheet(level_style)
+        button_layout.addWidget(level2_button)
+
+        level3_button = QPushButton('Level 3', self)
+        level3_button.clicked.connect(lambda: self.create_cells(level3))
+        level3_button.setStyleSheet(level_style)
+        button_layout.addWidget(level3_button)
+         
+        main_layout.addLayout(button_layout)
+
+        self.setLayout(main_layout)
     
+    def test(self):
+        print("Kliknieto guzik")
+
     def change_turn(self):
         if self.turn == "green":
             self.turn = "red"
@@ -58,16 +99,14 @@ class Game(QGraphicsView):
                 return False, color
         return True, color
 
-    def create_cells(self):
-        player_cell = Cell(100, 100, 30, "player")
-        player_cell1 = Cell(600, 500, 30, "player")
-        enemy_cell = Cell(500, 300, 30, "enemy")
-        enemy_cell1 = Cell(200, 400, 30, "enemy")
-        self.scene.addItem(player_cell)
-        self.scene.addItem(player_cell1)
-        self.scene.addItem(enemy_cell)
-        self.scene.addItem(enemy_cell1)
-        self.cells.extend([player_cell1, enemy_cell, enemy_cell1, player_cell])
+    def create_cells(self, level):
+        for i in self.cells + self.attacks:
+            self.scene.removeItem(i)
+        del self.cells[:]
+        del self.attacks[:]
+        level(self.scene, self.cells)
+        self.reset_timer()
+        self.scene.update()
 
     def update_game(self):
         if not self.game_won:
@@ -82,13 +121,15 @@ class Game(QGraphicsView):
                 self.scene.update()
             cell.grow()
         if self.last_turn != self.turn:
-            self.time_left = 15
-            self.turn_timer.start(15000)
-            self.last_turn = self.turn
-            self.update_turn_display()
+            self.reset_timer()
         else:
             self.time_left -= 1
         
+    def reset_timer(self):
+        self.time_left = 15
+        self.turn_timer.start(15000)
+        self.last_turn = self.turn
+        self.update_turn_display()
 
     def update_turn_display(self):
         if self.turn == "green":

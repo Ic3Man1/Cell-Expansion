@@ -12,7 +12,6 @@ def select_cell(cell, turn):
         show_fading_message("Not your cell")
         return None
 
-
 def unselect_cell(cell):
     cell.change_border_color("black")
     return None
