@@ -17,6 +17,7 @@ class Game(QGraphicsView):
         
         self.cells = []
         self.attacks = []
+        self.pos_moves = []
         self.selected_cell = None
 
         self.last_turn = "green"
@@ -53,12 +54,13 @@ class Game(QGraphicsView):
         main_layout.addStretch(1)
 
         possible_move_button = QPushButton('Show possible moves', self)
-        possible_move_button.clicked.connect(self.test)
+        possible_move_button.pressed.connect(self.show_possible_moves)
+        possible_move_button.released.connect(self.hide_possible_moves)
         possible_move_button.setStyleSheet(possible_moves_style)
         button_layout.addWidget(possible_move_button)
 
         best_move_button = QPushButton('Show best move', self)
-        best_move_button.clicked.connect(self.test)
+        best_move_button.clicked.connect(lambda: print("kliknieto guzik"))
         best_move_button.setStyleSheet(best_move_style)
         button_layout.addWidget(best_move_button)
 
@@ -81,8 +83,26 @@ class Game(QGraphicsView):
 
         self.setLayout(main_layout)
     
-    def test(self):
-        print("Kliknieto guzik")
+    def show_possible_moves(self):
+        for cell in self.cells:
+            for another_cell in self.cells:
+                if cell != another_cell and cell.color == self.turn and another_cell not in cell.con_to:
+                    if cell in another_cell.con_to:
+                        if int(round(calc_distance(cell, another_cell)/2)) < cell.hp:
+                            pos_move = Attack(cell, another_cell, "yellow", "yellow")
+                            self.scene.addItem(pos_move)
+                            self.pos_moves.append(pos_move)
+                    else:
+                        if calc_distance(cell, another_cell) < cell.hp:
+                            pos_move = Attack(cell, another_cell, "yellow", "yellow")
+                            self.scene.addItem(pos_move)
+                            self.pos_moves.append(pos_move)
+        self.scene.update()
+      
+    def hide_possible_moves(self):
+        for pos_mov in self.pos_moves:
+            self.scene.removeItem(pos_mov)
+        del self.pos_moves[:]
 
     def change_turn(self):
         if self.turn == "green":
