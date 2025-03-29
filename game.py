@@ -58,7 +58,7 @@ class Game(QGraphicsView):
         self.scene.addItem(player_cell1)
         self.scene.addItem(enemy_cell)
         self.scene.addItem(enemy_cell1)
-        self.cells.extend([player_cell, player_cell1, enemy_cell, enemy_cell1])
+        self.cells.extend([player_cell1, enemy_cell, enemy_cell1, player_cell])
 
     def update_game(self):
         for cell in self.cells:

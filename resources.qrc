@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file alias="green_cell">green_cell.jpg</file>
-    <file alias="red_cell">red_cell.png</file>
+    <file alias="green_cell">green_square.jpg</file>
+    <file alias="red_cell">red_square.jpg</file>
 </qresource>
 </RCC>
