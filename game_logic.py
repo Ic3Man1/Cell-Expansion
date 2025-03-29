@@ -163,11 +163,9 @@ def switch_turn(turn):
 def retrieve_cell(cell, attacks):
     for attack in attacks:
         if attack.attacker == cell and attack.defender not in cell.whos_con:
-            #print("test2")
             attack.line1_color = "red" if attack.attacker.owner == "player" else "green"
             attack.line2_color = "red" if attack.attacker.owner == "player" else "green"
         elif (attack.attacker == cell or attack.defender == cell):
-            #print("test")
             cut_attack(attack, cell.color)
             attack.line1_color = "green" if attack.attacker.owner == "player" else "red"
             attack.line2_color = "green" if attack.attacker.owner == "player" else "red"
@@ -178,8 +176,7 @@ def retrieve_cell(cell, attacks):
         elif (attack.attacker == cell or attack.defender == cell):
             attack.defender.hp_supply += 2
             attack.defender.dmg_taken -= 2
-        
-    
+    cell.hp = 1
     cell.owner = "enemy" if cell.owner == "player" else "player"
     return attacks
 

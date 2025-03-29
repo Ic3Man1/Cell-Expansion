@@ -22,6 +22,8 @@ class Game(QGraphicsView):
         self.turn = "green"
         self.time_left = 15
 
+        self.game_won = False
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_game)
         self.timer.timeout.connect(self.update_turn_display)
@@ -49,6 +51,13 @@ class Game(QGraphicsView):
         self.time_left = 15
         self.update_turn_display()
 
+    def chcek_win(self):
+        color = self.cells[0].color
+        for cell in self.cells:
+            if cell.color != color:
+                return False, color
+        return True, color
+
     def create_cells(self):
         player_cell = Cell(100, 100, 30, "player")
         player_cell1 = Cell(600, 500, 30, "player")
@@ -61,6 +70,11 @@ class Game(QGraphicsView):
         self.cells.extend([player_cell1, enemy_cell, enemy_cell1, player_cell])
 
     def update_game(self):
+        if not self.game_won:
+            win, color = self.chcek_win()
+            if win:
+                show_fading_message((str(color) + " has won"), 5000)
+                self.game_won = True
         for cell in self.cells:
             if cell.hp <= 0:
                 self.attacks = retrieve_cell(cell, self.attacks)
