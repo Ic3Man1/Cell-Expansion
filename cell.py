@@ -1,12 +1,17 @@
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsTextItem
-from PyQt5.QtGui import QBrush, QColor, QPen
+from PyQt5.QtGui import QBrush, QColor, QPen, QPixmap
 from PyQt5.QtCore import QRectF
+import resources_rc
 
 class Cell(QGraphicsEllipseItem):
     def __init__(self, x, y, radius, owner):
         super().__init__(QRectF(x, y, radius * 2, radius * 2))
         self.color = "green" if owner == "player" else "red"
-        self.setBrush(QBrush(QColor(self.color)))
+        if owner == "player":
+            pixmap = QPixmap(":/green_cell") 
+        else:
+            pixmap = QPixmap(":/red_cell")
+        self.setBrush(QBrush(pixmap))
         self.owner = owner
         self.hp = 10
         self.setZValue(1)
@@ -35,7 +40,9 @@ class Cell(QGraphicsEllipseItem):
 
     def update(self):
         if self.owner == "player":
-            self.setBrush(QBrush(QColor("green")))
+            self.color = "green"
+            self.setBrush(QBrush(QPixmap(":/green_cell")))
         else:
-            self.setBrush(QBrush(QColor("red")))
+            self.color = "red"
+            self.setBrush(QBrush(QPixmap(":/red_cell")))
         self.dmg_taken, self.hp_supply = self.hp_supply, self.dmg_taken
