@@ -7,6 +7,7 @@ from game_logic import *
 from attack import Attack
 from levels import *
 from buttonstyles import *
+from logger import *
 
 class Game(QGraphicsView):
     def __init__(self):
@@ -47,6 +48,20 @@ class Game(QGraphicsView):
 
         self.create_cells(level1)
         self.init_ui()
+        self.log_window = LogWindow()
+        self.logger = setup_logger()
+        self.init_logger()
+        set_logger(self.logger)
+
+        
+    def init_logger(self):
+        text_handler = logging.StreamHandler(stream=sys.stdout)
+        text_handler.setFormatter(logging.Formatter('%(message)s'))
+        text_handler.emit = lambda record: self.log_window.log_message(text_handler.format(record))
+        self.logger.addHandler(text_handler)
+        self.logger.info("Logger initialized.")
+        self.logger.info("Game started")
+        
 
     def init_ui(self):
         main_layout = QVBoxLayout()
@@ -66,16 +81,19 @@ class Game(QGraphicsView):
 
         level1_button = QPushButton('Level 1', self)
         level1_button.clicked.connect(lambda: self.create_cells(level1))
+        level1_button.clicked.connect(lambda: self.logger.info(str(self.turn.capitalize()) + " player changed level to 1"))
         level1_button.setStyleSheet(level_style)
         button_layout.addWidget(level1_button)
 
         level2_button = QPushButton('Level 2', self)
         level2_button.clicked.connect(lambda: self.create_cells(level2))
+        level2_button.clicked.connect(lambda: self.logger.info(str(self.turn.capitalize()) + " player changed level to 2"))
         level2_button.setStyleSheet(level_style)
         button_layout.addWidget(level2_button)
 
         level3_button = QPushButton('Level 3', self)
         level3_button.clicked.connect(lambda: self.create_cells(level3))
+        level3_button.clicked.connect(lambda: self.logger.info(str(self.turn.capitalize()) + " player changed level to 3"))
         level3_button.setStyleSheet(level_style)
         button_layout.addWidget(level3_button)
          
@@ -97,6 +115,7 @@ class Game(QGraphicsView):
                             pos_move = Attack(cell, another_cell, "yellow", "yellow")
                             self.scene.addItem(pos_move)
                             self.pos_moves.append(pos_move)
+        self.logger.info(str(self.turn.capitalize()) + " player displayed possible moves")
         self.scene.update()
       
     def hide_possible_moves(self):
@@ -126,6 +145,7 @@ class Game(QGraphicsView):
         del self.attacks[:]
         level(self.scene, self.cells)
         self.reset_timer()
+        self.game_won = False
         self.scene.update()
 
     def update_game(self):
@@ -133,10 +153,12 @@ class Game(QGraphicsView):
             win, color = self.chcek_win()
             if win:
                 show_fading_message((str(color) + " has won"), 5000)
+                self.logger.info(str(self.turn.capitalize()) + " player has won a game")
                 self.game_won = True
         for cell in self.cells:
             if cell.hp <= 0:
                 self.attacks = retrieve_cell(cell, self.attacks)
+                self.logger.info(str(self.turn.capitalize()) + " player has captured an enemy cell")
                 cell.update()
                 self.scene.update()
             cell.grow()
@@ -168,6 +190,7 @@ class Game(QGraphicsView):
         item = self.scene.itemAt(event.pos(), self.transform())
         if item == self.selected_cell and self.selected_cell is not None:
             self.selected_cell = unselect_cell(self.selected_cell)
+            self.logger.info(str(self.turn.capitalize()) + " player has unmarked the cell")
         elif isinstance(item, Cell) and self.selected_cell is None:
             self.selected_cell = select_cell(item, self.turn)
         elif isinstance(item, Cell) and self.selected_cell is not None and item not in self.selected_cell.con_to:

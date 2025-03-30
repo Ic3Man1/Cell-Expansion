@@ -3,12 +3,21 @@ from PyQt5.QtGui import QPen, QColor
 from PyQt5.QtWidgets import QGraphicsLineItem, QApplication, QLabel, QGraphicsView
 from PyQt5.QtCore import QRectF, QPointF, Qt, QLineF, pyqtSlot, QPropertyAnimation, QPoint, QTimer
 from attack import Attack
+import logging
+
+logger = None
+
+def set_logger(game_logger):
+    global logger
+    logger = game_logger
 
 def select_cell(cell, turn):
     if cell.color == turn:
         cell.change_border_color("yellow")
+        logger.info(str(turn.capitalize()) + " player has marked the cell")
         return cell
     else:
+        logger.info(str(turn.capitalize()) + " player has tried to mark not their cell")
         show_fading_message("Not your cell")
         return None
 
@@ -71,13 +80,16 @@ def cut_attack(item, turn):
 def separate(attacks, item, turn):
     if item.line1_color != item.line2_color:
         cut_attack(item, turn)
+        logger.info(str(turn.capitalize()) + " player has cut the connection")
     else:
         if item.line1_color == turn:
             attack = stop_attack(item)
             attacks.remove(attack)
+            logger.info(str(turn.capitalize()) + " player has cut the connection")
             turn = switch_turn(turn)
         else:
             show_fading_message("You can't cut not your line")
+            logger.info(str(turn.capitalize()) + " player has tried to cut not their line")
     return turn
 
 def merge_cells(attacker, defender):
@@ -125,17 +137,21 @@ def merge(attacks, selected_cell, item, turn):
         if i.attacker == item and i.defender == selected_cell:
             if i.attacker.owner != i.defender.owner and int(round(calc_distance(selected_cell, item)/2)) < selected_cell.hp:
                 cell = remerge_cells(i, selected_cell, item)
+                logger.info(str(turn.capitalize()) + " player has connected two cells")
                 turn = switch_turn(turn)
                 return cell, turn
             else:
                 show_fading_message("Mismove")
+                logger.info(str(turn.capitalize()) + " player has tried to make a mismove")
                 return selected_cell, turn
     if calc_distance(selected_cell, item) < selected_cell.hp:
         cell, attack = merge_cells(selected_cell, item)
+        logger.info(str(turn.capitalize()) + " player has connected to another cell")
         attacks.append(attack)
         turn = switch_turn(turn)
     else:
         show_fading_message("Mismove")
+        logger.info(str(turn.capitalize()) + " player has tried to make a mismove")
         return selected_cell, turn
     return cell, turn
 
