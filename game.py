@@ -8,6 +8,7 @@ from attack import Attack
 from levels import *
 from buttonstyles import *
 from logger import *
+from helper import suggest_best_move
 
 class Game(QGraphicsView):
     def __init__(self):
@@ -20,6 +21,7 @@ class Game(QGraphicsView):
         self.attacks = []
         self.pos_moves = []
         self.selected_cell = None
+        self.best_move = None
 
         self.last_turn = "green"
         self.turn = "green"
@@ -75,7 +77,8 @@ class Game(QGraphicsView):
         button_layout.addWidget(possible_move_button)
 
         best_move_button = QPushButton('Show best move', self)
-        best_move_button.clicked.connect(lambda: print("kliknieto guzik"))
+        best_move_button.pressed.connect(self.show_best_move)
+        best_move_button.released.connect(self.hide_best_move)
         best_move_button.setStyleSheet(best_move_style)
         button_layout.addWidget(best_move_button)
 
@@ -122,6 +125,24 @@ class Game(QGraphicsView):
         for pos_mov in self.pos_moves:
             self.scene.removeItem(pos_mov)
         del self.pos_moves[:]
+
+    def show_best_move(self):
+        result = suggest_best_move(self.cells, self.turn)
+        if not result:
+            self.logger.info("No best move")
+            return
+
+        attacker, defender = result
+        line = Attack(attacker, defender, "orange", "orange")
+        self.scene.addItem(line)
+        self.best_move = line
+        self.logger.info(str(self.turn.capitalize()) + " player displayed best move")
+
+    def hide_best_move(self):
+        if self.best_move is None:
+            return
+        self.scene.removeItem(self.best_move)
+        self.best_move = None
 
     def change_turn(self):
         if self.turn == "green":
