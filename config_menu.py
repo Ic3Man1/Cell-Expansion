@@ -7,9 +7,8 @@ from save_demo import *
 
 
 class ConfigDialog(QWidget):
-    def __init__(self, game):
+    def __init__(self):
         super().__init__()
-        self.game = game
         self.setWindowTitle("Configuration Menu")
         self.setGeometry(1440, 550, 350, 250)
         
@@ -38,13 +37,10 @@ class ConfigDialog(QWidget):
         layout.addWidget(self.ip_input)
 
         self.save_button = QPushButton("Save settings")
-        self.demo_button = QPushButton("Save demo")
         self.load_button = QPushButton("Watch demo")
         self.save_button.clicked.connect(self.save_settings)
-        self.demo_button.clicked.connect(self.save_demo)
         # self.load_button.clicked.connect(self.load_settings)
         layout.addWidget(self.save_button)
-        layout.addWidget(self.demo_button)
         layout.addWidget(self.load_button)
 
         self.mode = self.get_game_mode()
@@ -67,9 +63,6 @@ class ConfigDialog(QWidget):
         elif self.network_game_button.isChecked():
             self.network_game_button.setChecked(True)
             return "Online Multiplayer"
-        
-    def save_demo(self):
-        self.game.save_game()
-        
+
     
    

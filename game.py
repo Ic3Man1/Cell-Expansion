@@ -57,9 +57,7 @@ class Game(QGraphicsView):
         self.logger = setup_logger()
         self.init_logger()
         set_logger(self.logger)
-        self.congig_menu = ConfigDialog(self)
-        self.congig_menu.demo_button.clicked.connect(lambda: save_scene_to_json(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip))
-
+        self.congig_menu = ConfigDialog()
         
     def init_logger(self):
         text_handler = logging.StreamHandler(stream=sys.stdout)
@@ -175,6 +173,7 @@ class Game(QGraphicsView):
         self.scene.update()
 
     def update_game(self):
+        self.save_game()
         if self.congig_menu.mode == "Singleplayer":
             self.turn = "green"
         else:
@@ -237,4 +236,3 @@ class Game(QGraphicsView):
         save_scene_to_json(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
         save_scene_to_xml(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
         #save_scene_to_db(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
-        self.logger.info("Game scene saved successfully")
