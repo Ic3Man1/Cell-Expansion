@@ -9,11 +9,14 @@ from levels import *
 from buttonstyles import *
 from logger import *
 from helper import suggest_best_move
+from config_menu import *
+from save_demo import *
 
 class Game(QGraphicsView):
     def __init__(self):
         super().__init__()
         self.scene = QGraphicsScene(0, 0, 800, 600)
+        self.setWindowTitle('Game')
         self.scene.setBackgroundBrush(QBrush(QColor(50, 50, 50)))
         self.setScene(self.scene)
         
@@ -54,6 +57,8 @@ class Game(QGraphicsView):
         self.logger = setup_logger()
         self.init_logger()
         set_logger(self.logger)
+        self.congig_menu = ConfigDialog(self)
+        self.congig_menu.demo_button.clicked.connect(lambda: save_scene_to_json(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip))
 
         
     def init_logger(self):
@@ -170,6 +175,13 @@ class Game(QGraphicsView):
         self.scene.update()
 
     def update_game(self):
+        if self.congig_menu.mode == "Singleplayer":
+            self.turn = "green"
+        else:
+            if self.last_turn != self.turn:
+                self.reset_timer()
+            else:
+                self.time_left -= 1
         if not self.game_won:
             win, color = self.chcek_win()
             if win:
@@ -183,10 +195,6 @@ class Game(QGraphicsView):
                 cell.update()
                 self.scene.update()
             cell.grow()
-        if self.last_turn != self.turn:
-            self.reset_timer()
-        else:
-            self.time_left -= 1
         
     def reset_timer(self):
         self.time_left = 15
@@ -225,4 +233,8 @@ class Game(QGraphicsView):
             self.update_turn_display()
             self.scene.update()
 
-    
+    def save_game(self):
+        save_scene_to_json(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
+        save_scene_to_xml(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
+        #save_scene_to_db(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
+        self.logger.info("Game scene saved successfully")
