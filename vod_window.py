@@ -6,14 +6,14 @@ from cell import *
 from attack import *
 
 class PlaybackWindow(QWidget):
-    def __init__(self, history_data):
+    def __init__(self):
         super().__init__()
         self.setWindowTitle("VOD")
         self.setGeometry(100, 100, 800, 600)
-
-        self.history_data = history_data 
+        #self.fix_json_format()
+        self.history_data = self.load_history()
         self.current_frame = 0
-        self.total_frames = len(history_data)
+        self.total_frames = len(self.history_data)
         
         self.layout = QVBoxLayout(self)
         self.scene = QGraphicsScene(0, 0, 800, 600)
@@ -69,3 +69,9 @@ class PlaybackWindow(QWidget):
                 self.scene.addItem(attack)
 
         self.scene.update()
+
+    def load_history(self):
+        with open("game_history.json", "r") as file:
+            data = json.load(file)
+            return data
+   

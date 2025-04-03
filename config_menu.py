@@ -4,6 +4,7 @@ from PyQt5.QtGui import QRegExpValidator
 import json
 import xml.etree.ElementTree as ET
 from save_demo import *
+from vod_window import *
 
 
 class ConfigDialog(QWidget):
@@ -39,19 +40,24 @@ class ConfigDialog(QWidget):
         self.save_button = QPushButton("Save settings")
         self.load_button = QPushButton("Watch demo")
         self.save_button.clicked.connect(self.save_settings)
-        # self.load_button.clicked.connect(self.load_settings)
+        self.load_button.clicked.connect(self.watch_demo)
         layout.addWidget(self.save_button)
         layout.addWidget(self.load_button)
 
         self.mode = self.get_game_mode()
         self.ip = ""
-
+        
+        #self.vod = PlaybackWindow()
         self.setLayout(layout)
         self.show()
 
     def save_settings(self):
         self.mode = self.get_game_mode()
         self.ip = self.ip_input.text()
+
+    def watch_demo(self):
+        vod = PlaybackWindow()
+        vod.show()
         
     def get_game_mode(self):
         if self.single_player_button.isChecked():
