@@ -6,6 +6,8 @@ import resources_rc
 class Cell(QGraphicsEllipseItem):
     def __init__(self, x, y, radius, owner):
         super().__init__(QRectF(x, y, radius * 2, radius * 2))
+        self.x = x
+        self.y = y
         self.color = "green" if owner == "player" else "red"
         if owner == "player":
             pixmap = QPixmap(":/green_cell") 

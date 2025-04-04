@@ -20,44 +20,48 @@ def save_scene_to_json(cells, attacks, pos_moves, best_move, turn, time_left, mo
         "turn_time": time_left
     }
     
+    cells_data = []
     for cell in cells:
         cell_data = {
             "type": "cell",
-            "x": cell.x(),
-            "y": cell.y(),
+            "x": cell.x,
+            "y": cell.y,
             "hp": cell.hp,
             "color": cell.color,
             "owner": cell.owner
         }
+        cells_data.append(cell_data)
+
+    attacks_data = []
     attack_data = {}
     for attack in attacks + pos_moves:
         attack_data = {
             "type": "attack",
-            "start_x": attack.atk_center.x(),
-            "start_y": attack.atk_center.y(),
-            "end_x": attack.def_center.x(),
-            "end_y": attack.def_center.y(),
+            "start_x": attack.attacker.x,
+            "start_y": attack.attacker.y,
+            "end_x": attack.defender.x,
+            "end_y": attack.defender.y,
             "color1": attack.line1_color,
             "color2": attack.line2_color
         }
-
-    best_move_data = None
+        attacks_data.append(attack_data)
+    best_move_data = {}
     if best_move is not None:
         best_move_data = {
-            "type": "attack",
-            "start_x": attack.atk_center.x(),
-            "start_y": attack.atk_center.y(),
-            "end_x": attack.def_center.x(),
-            "end_y": attack.def_center.y(),
-            "color1": attack.line1_color,
-            "color2": attack.line2_color
+            "type": "best_move",
+            "start_x": best_move.attacker.x,
+            "start_y": best_move.attacker.y,
+            "end_x": best_move.defender.x,
+            "end_y": best_move.defender.y,
+            "color1": best_move.line1_color,
+            "color2": best_move.line2_color
         }
 
     scene_data.append({
         "game_settings": game_settings,
         "game_state": game_state,
-        "cells": cell_data,
-        "attacks": attack_data,
+        "cells": cells_data,
+        "attacks": attacks_data,
         "best_move": best_move_data
     })
 
@@ -86,8 +90,8 @@ def save_scene_to_xml(cells, attacks, pos_moves, best_move, turn, time_left, mod
     cells_el = ET.SubElement(scene, "cells")
     for cell in cells:
         cell_data = ET.SubElement(cells_el, "cell")
-        ET.SubElement(cell_data, "x").text = str(cell.x())
-        ET.SubElement(cell_data, "y").text = str(cell.y())
+        ET.SubElement(cell_data, "x").text = str(cell.x)
+        ET.SubElement(cell_data, "y").text = str(cell.y)
         ET.SubElement(cell_data, "hp").text = str(cell.hp)
         ET.SubElement(cell_data, "color").text = cell.color
         ET.SubElement(cell_data, "owner").text = cell.owner

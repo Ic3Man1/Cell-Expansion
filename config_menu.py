@@ -56,8 +56,8 @@ class ConfigDialog(QWidget):
         self.ip = self.ip_input.text()
 
     def watch_demo(self):
-        vod = PlaybackWindow()
-        vod.show()
+        self.vod = PlaybackWindow()
+        self.vod.show()
         
     def get_game_mode(self):
         if self.single_player_button.isChecked():
