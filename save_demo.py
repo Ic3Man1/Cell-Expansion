@@ -53,8 +53,6 @@ def save_scene_to_json(cells, attacks, pos_moves, best_move, turn, time_left, mo
             "start_y": best_move.attacker.y,
             "end_x": best_move.defender.x,
             "end_y": best_move.defender.y,
-            "color1": best_move.line1_color,
-            "color2": best_move.line2_color
         }
 
     scene_data.append({
@@ -99,21 +97,19 @@ def save_scene_to_xml(cells, attacks, pos_moves, best_move, turn, time_left, mod
     attacks_el = ET.SubElement(scene, "attacks")
     for attack in attacks + pos_moves:
         attack_data = ET.SubElement(attacks_el, "attack")
-        ET.SubElement(attack_data, "start_x").text = str(attack.atk_center.x())
-        ET.SubElement(attack_data, "start_y").text = str(attack.atk_center.y())
-        ET.SubElement(attack_data, "end_x").text = str(attack.def_center.x())
-        ET.SubElement(attack_data, "end_y").text = str(attack.def_center.y())
+        ET.SubElement(attack_data, "start_x").text = str(attack.attacker.x)
+        ET.SubElement(attack_data, "start_y").text = str(attack.attacker.y)
+        ET.SubElement(attack_data, "end_x").text = str(attack.defender.x)
+        ET.SubElement(attack_data, "end_y").text = str(attack.defender.y)
         ET.SubElement(attack_data, "color1").text = attack.line1_color
         ET.SubElement(attack_data, "color2").text = attack.line2_color
 
     if best_move is not None:
         best_move_el = ET.SubElement(scene, "best_move")
-        ET.SubElement(best_move_el, "start_x").text = str(best_move.atk_center.x())
-        ET.SubElement(best_move_el, "start_y").text = str(best_move.atk_center.y())
-        ET.SubElement(best_move_el, "end_x").text = str(best_move.def_center.x())
-        ET.SubElement(best_move_el, "end_y").text = str(best_move.def_center.y())
-        ET.SubElement(best_move_el, "color1").text = best_move.line1_color
-        ET.SubElement(best_move_el, "color2").text = best_move.line2_color
+        ET.SubElement(best_move_el, "start_x").text = str(best_move.attacker.x)
+        ET.SubElement(best_move_el, "start_y").text = str(best_move.attacker.y)
+        ET.SubElement(best_move_el, "end_x").text = str(best_move.defender.x)
+        ET.SubElement(best_move_el, "end_y").text = str(best_move.defender.y)
 
     indent(root)
     tree.write("game_history.xml", encoding="utf-8", xml_declaration=True)
@@ -138,8 +134,8 @@ def save_scene_to_db(cells, attacks, pos_moves, best_move, turn, time_left, mode
     for cell in cells:
         cell_data = {
             "type": "cell",
-            "x": cell.x(),
-            "y": cell.y(),
+            "x": cell.x,
+            "y": cell.y,
             "hp": cell.hp,
             "color": cell.color,
             "owner": cell.owner
@@ -150,10 +146,10 @@ def save_scene_to_db(cells, attacks, pos_moves, best_move, turn, time_left, mode
     for attack in attacks + pos_moves:
         attack_data = {
             "type": "attack",
-            "start_x": attack.atk_center.x(),
-            "start_y": attack.atk_center.y(),
-            "end_x": attack.def_center.x(),
-            "end_y": attack.def_center.y(),
+            "start_x": attack.attacker.x,
+            "start_y": attack.attacker.y,
+            "end_x": attack.defender.x,
+            "end_y": attack.defender.y,
             "color1": attack.line1_color,
             "color2": attack.line2_color
         }
@@ -162,13 +158,11 @@ def save_scene_to_db(cells, attacks, pos_moves, best_move, turn, time_left, mode
     best_move_data = None
     if best_move is not None:
         best_move_data = {
-            "type": "attack",
-            "start_x": best_move.atk_center.x(),
-            "start_y": best_move.atk_center.y(),
-            "end_x": best_move.def_center.x(),
-            "end_y": best_move.def_center.y(),
-            "color1": best_move.line1_color,
-            "color2": best_move.line2_color
+            "type": "best_move",
+            "start_x": best_move.attacker.x,
+            "start_y": best_move.attacker.y,
+            "end_x": best_move.defender.x,
+            "end_y": best_move.defender.y,
         }
 
     scene_document = {
@@ -182,7 +176,7 @@ def save_scene_to_db(cells, attacks, pos_moves, best_move, turn, time_left, mode
     try:
         collection.insert_one(scene_document)
     except Exception as e:
-        print(f"Błąd zapisu do bazy: {e}")
+        print(f"Error occured while saving data to db: {e}")
 
 def indent(elem, level=0):
     i = "\n" + level * "    "
