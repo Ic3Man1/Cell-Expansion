@@ -11,6 +11,7 @@ from logger import *
 from helper import suggest_best_move
 from config_menu import *
 from save_demo import *
+from network_handler import NetworkHandler, save_current_scene
 
 class Game(QGraphicsView):
     def __init__(self):
@@ -19,6 +20,7 @@ class Game(QGraphicsView):
         self.setWindowTitle('Game')
         self.scene.setBackgroundBrush(QBrush(QColor(50, 50, 50)))
         self.setScene(self.scene)
+        self.network = None
         
         self.cells = []
         self.attacks = []
@@ -174,6 +176,17 @@ class Game(QGraphicsView):
 
     def update_game(self):
         self.save_game()
+        if self.congig_menu.mode == "Online Multiplayer":
+            if not (self.network and self.network.is_connected()):
+                self.network = NetworkHandler(
+                    is_host=(self.congig_menu.ip.strip() == ""),
+                    ip=self.congig_menu.ip.strip(),
+                    port=12345,
+                    on_receive_callback=self.receive_scene
+                )
+            print("Jest polaczenie B)")
+        else:
+            self.network = None
         if self.congig_menu.mode == "Singleplayer":
             self.turn = "green"
         else:
@@ -231,8 +244,73 @@ class Game(QGraphicsView):
             self.turn = separate(self.attacks, item, self.turn)
             self.update_turn_display()
             self.scene.update()
+        # if self.network:
+        #     scene = save_current_scene(
+        #         self.cells, self.attacks, self.pos_moves, self.best_move,
+        #         self.turn, self.time_left,
+        #         self.congig_menu.mode, self.congig_menu.ip
+        #     )
+        #     self.network.send({"type": "scene", "data": scene})
 
     def save_game(self):
         save_scene_to_json(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
         save_scene_to_xml(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
+        #save_current_scene(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
         #save_scene_to_db(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
+
+    def receive_scene(self, data):
+        if data.get("type") != "scene":
+            return
+        scene_data = data.get("data")
+        if scene_data:
+            self.load_scene(scene_data)
+
+    def load_scene(self, scene_data):
+        self.scene.clear()
+        self.cells = []
+        self.attacks = []
+        self.pos_moves = []
+
+        game_settings = scene_data.get("game_settings", {})
+        game_state = scene_data.get("game_state", {})
+        cells = scene_data.get("cells", [])
+        attacks = scene_data.get("attacks", [])
+        best_move = scene_data.get("best_move")
+
+        turn = game_state.get("turn", "green")
+        time_left = game_state.get("turn_time", 15)
+
+        turn_label = QGraphicsTextItem("Player's Turn: {}\nTurn ends in: {} seconds".format(
+            turn.capitalize(), str(time_left)
+        ))
+        turn_label.setPos(0, 0)
+        turn_label.setDefaultTextColor(QColor("white"))
+        self.scene.addItem(turn_label)
+
+        for data in cells:
+            if data.get("type") == "cell":
+                cell = Cell(data["x"], data["y"], 30, data["owner"])
+                cell.hp = data["hp"]
+                cell.hp_points_label.setPlainText(str(cell.hp))
+                cell.color = data["color"]
+                cell.setBrush(QColor(cell.color))
+                self.scene.addItem(cell)
+                self.cells.append(cell)
+
+        for data in attacks:
+            if data.get("type") == "attack":
+                attacker = Cell(data["start_x"], data["start_y"], 30, "player")
+                defender = Cell(data["end_x"], data["end_y"], 30, "player")
+                attack = Attack(attacker, defender, data["color1"], data["color2"])
+                self.scene.addItem(attack)
+                self.attacks.append(attack)
+
+        if best_move:
+            attacker = Cell(best_move["start_x"], best_move["start_y"], 30, "player")
+            defender = Cell(best_move["end_x"], best_move["end_y"], 30, "player")
+            best = Attack(attacker, defender, "orange", "orange")
+            self.scene.addItem(best)
+            self.pos_moves.append(best)
+
+        self.scene.setSceneRect(0, 0, 800, 600)
+        self.scene.update()

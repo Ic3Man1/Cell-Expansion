@@ -1,0 +1,9 @@
+Config & History
+
+Laboratorium zostało wykonane na 5 punktów. Stworzono osobne menu, w którym można wybrać tryb gry oraz podać adres IP i port. Historia gry jest zapisywana do plików JSON i XML, a także powinna być poprawnie zapisywana do bazy danych. Opcja zapisu do bazy danych nie została przetestowana, ponieważ nie mam uruchomionego lokalnego serwera MongoDB ani połączenia z instancją zdalną.
+
+Aby włączyć zapisywanie do MongoDB, należy:
+- odkomentować linię 238 w pliku game.py (ostatnia linia funkcji save_game),
+- wybrać odpowiedni adres klienta w linii 119 pliku save_demo.py (pierwsza linia funkcji save_scene_to_db).
+
+Odtwarzacz playback z regulacją prędkości uruchamia się po kliknięciu przycisku "Watch demo" w menu konfiguracyjnym. Otwiera się nowe okno, w którym należy nacisnąć przycisk "Start Playback", aby rozpocząć odtwarzanie.

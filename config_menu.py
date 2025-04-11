@@ -46,6 +46,7 @@ class ConfigDialog(QWidget):
 
         self.mode = self.get_game_mode()
         self.ip = ""
+        self.port = ""
         
         #self.vod = PlaybackWindow()
         self.setLayout(layout)
@@ -53,7 +54,9 @@ class ConfigDialog(QWidget):
 
     def save_settings(self):
         self.mode = self.get_game_mode()
-        self.ip = self.ip_input.text()
+        if ":" in self.ip_input.text():
+            self.ip, self.port = self.ip_input.text().split(":")
+        #print(self.ip + " " + self.port)
 
     def watch_demo(self):
         self.vod = PlaybackWindow()

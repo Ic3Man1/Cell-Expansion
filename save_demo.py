@@ -190,3 +190,62 @@ def indent(elem, level=0):
     else:
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
+
+def save_current_scene(cells, attacks, pos_moves, best_move, turn, time_left, mode, ip):
+    scene_data = [] 
+    game_settings = {
+        "mode": mode,
+        "ip_address": ip
+    }
+
+    game_state = {
+        "turn": turn,
+        "turn_time": time_left
+    }
+    
+    cells_data = []
+    for cell in cells:
+        cell_data = {
+            "type": "cell",
+            "x": cell.x,
+            "y": cell.y,
+            "hp": cell.hp,
+            "color": cell.color,
+            "owner": cell.owner
+        }
+        cells_data.append(cell_data)
+
+    attacks_data = []
+    attack_data = {}
+    for attack in attacks: # + pos_moves
+        attack_data = {
+            "type": "attack",
+            "start_x": attack.attacker.x,
+            "start_y": attack.attacker.y,
+            "end_x": attack.defender.x,
+            "end_y": attack.defender.y,
+            "color1": attack.line1_color,
+            "color2": attack.line2_color
+        }
+        attacks_data.append(attack_data)
+    # best_move_data = {}
+    # if best_move is not None:
+    #     best_move_data = {
+    #         "type": "best_move",
+    #         "start_x": best_move.attacker.x,
+    #         "start_y": best_move.attacker.y,
+    #         "end_x": best_move.defender.x,
+    #         "end_y": best_move.defender.y,
+    #     }
+
+    scene_data.append({
+        "game_settings": game_settings,
+        "game_state": game_state,
+        "cells": cells_data,
+        "attacks": attacks_data,
+        #"best_move": best_move_data
+    })
+
+    with open("current_scene.json", "w") as file:
+        json.dump(scene_data, file, indent=4)
+        file.write("\n")
