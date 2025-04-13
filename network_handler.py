@@ -28,6 +28,7 @@ class NetworkHandler:
                     break
                 parsed = json.loads(data)
                 self.callback(parsed)
+                print(data)
             except Exception as e:
                 print("[Błąd odbioru]", e)
                 break
@@ -36,14 +37,14 @@ class NetworkHandler:
         try:
             payload = json.dumps(data_dict).encode()
             self.conn.sendall(payload)
+            print("[DEBUG] Wysyłam scenę:", data_dict)
         except Exception as e:
             print("[Błąd wysyłania]", e)
 
     def is_connected(self):
         return self.conn is not None
 
-def save_current_scene(cells, attacks, pos_moves, best_move, turn, time_left, mode, ip):
-    scene_data = [] 
+def save_current_scene(cells, attacks, turn, time_left, mode, ip):
     game_settings = {
         "mode": mode,
         "ip_address": ip
@@ -66,8 +67,6 @@ def save_current_scene(cells, attacks, pos_moves, best_move, turn, time_left, mo
         }
         cells_data.append(cell_data)
 
-    
-
     attacks_data = []
     attack_data = {}
     for attack in attacks: # + pos_moves
@@ -81,22 +80,10 @@ def save_current_scene(cells, attacks, pos_moves, best_move, turn, time_left, mo
             "color2": attack.line2_color
         }
         attacks_data.append(attack_data)
-    # best_move_data = {}
-    # if best_move is not None:
-    #     best_move_data = {
-    #         "type": "best_move",
-    #         "start_x": best_move.attacker.x,
-    #         "start_y": best_move.attacker.y,
-    #         "end_x": best_move.defender.x,
-    #         "end_y": best_move.defender.y,
-    #     }
 
-    scene_data.append({
+    return {
         "game_settings": game_settings,
         "game_state": game_state,
         "cells": cells_data,
         "attacks": attacks_data,
-        #"best_move": best_move_data
-    })
-
-    return scene_data
+    }

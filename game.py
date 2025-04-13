@@ -184,7 +184,7 @@ class Game(QGraphicsView):
                     port=12345,
                     on_receive_callback=self.receive_scene
                 )
-            print("Jest polaczenie B)")
+            #print("Jest polaczenie B)")
         else:
             self.network = None
         if self.congig_menu.mode == "Singleplayer":
@@ -244,13 +244,13 @@ class Game(QGraphicsView):
             self.turn = separate(self.attacks, item, self.turn)
             self.update_turn_display()
             self.scene.update()
-        # if self.network:
-        #     scene = save_current_scene(
-        #         self.cells, self.attacks, self.pos_moves, self.best_move,
-        #         self.turn, self.time_left,
-        #         self.congig_menu.mode, self.congig_menu.ip
-        #     )
-        #     self.network.send({"type": "scene", "data": scene})
+        if self.network:
+                    scene = save_current_scene(
+                        self.cells, self.attacks,
+                        self.turn, self.time_left,
+                        self.congig_menu.mode, self.congig_menu.ip
+                    )
+                    self.network.send({"type": "scene", "data": scene})
 
     def save_game(self):
         save_scene_to_json(self.cells, self.attacks, self.pos_moves, self.best_move, self.turn, self.time_left, self.congig_menu.mode, self.congig_menu.ip)
@@ -263,54 +263,49 @@ class Game(QGraphicsView):
             return
         scene_data = data.get("data")
         if scene_data:
-            self.load_scene(scene_data)
+            print("[DEBUG] Otrzymano scenę od przeciwnika")
+            QTimer.singleShot(0, lambda: self.load_scene(scene_data))
+            QTimer.singleShot(0, lambda: self.ensure_timers())
 
     def load_scene(self, scene_data):
+        print("[DEBUG] Ładuję scenę...")
+
         self.scene.clear()
         self.cells = []
         self.attacks = []
         self.pos_moves = []
 
-        game_settings = scene_data.get("game_settings", {})
         game_state = scene_data.get("game_state", {})
-        cells = scene_data.get("cells", [])
-        attacks = scene_data.get("attacks", [])
-        best_move = scene_data.get("best_move")
+        self.turn = game_state.get("turn", "green")
+        self.time_left = game_state.get("turn_time", 15)
+        self.update_turn_display()
 
-        turn = game_state.get("turn", "green")
-        time_left = game_state.get("turn_time", 15)
-
-        turn_label = QGraphicsTextItem("Player's Turn: {}\nTurn ends in: {} seconds".format(
-            turn.capitalize(), str(time_left)
-        ))
-        turn_label.setPos(0, 0)
-        turn_label.setDefaultTextColor(QColor("white"))
-        self.scene.addItem(turn_label)
-
-        for data in cells:
+        for data in scene_data.get("cells", []):
             if data.get("type") == "cell":
                 cell = Cell(data["x"], data["y"], 30, data["owner"])
                 cell.hp = data["hp"]
-                cell.hp_points_label.setPlainText(str(cell.hp))
                 cell.color = data["color"]
                 cell.setBrush(QColor(cell.color))
+                cell.hp_points_label.setPlainText(str(cell.hp))
                 self.scene.addItem(cell)
                 self.cells.append(cell)
 
-        for data in attacks:
+        for data in scene_data.get("attacks", []):
             if data.get("type") == "attack":
-                attacker = Cell(data["start_x"], data["start_y"], 30, "player")
-                defender = Cell(data["end_x"], data["end_y"], 30, "player")
-                attack = Attack(attacker, defender, data["color1"], data["color2"])
-                self.scene.addItem(attack)
-                self.attacks.append(attack)
-
-        if best_move:
-            attacker = Cell(best_move["start_x"], best_move["start_y"], 30, "player")
-            defender = Cell(best_move["end_x"], best_move["end_y"], 30, "player")
-            best = Attack(attacker, defender, "orange", "orange")
-            self.scene.addItem(best)
-            self.pos_moves.append(best)
+                attacker = self.find_cell_near(data["start_x"], data["start_y"])
+                defender = self.find_cell_near(data["end_x"], data["end_y"])
+                if attacker and defender:
+                    attack = Attack(attacker, defender, data["color1"], data["color2"])
+                    self.scene.addItem(attack)
+                    self.attacks.append(attack)
 
         self.scene.setSceneRect(0, 0, 800, 600)
+        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
+        self.view.viewport().update()
         self.scene.update()
+
+    def ensure_timers(self):
+        if not self.timer.isActive():
+            self.timer.start(1000)
+        if not self.turn_timer.isActive():
+            self.turn_timer.start(15000)
