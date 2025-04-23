@@ -187,8 +187,14 @@ class Game(QGraphicsView):
             #print("Jest polaczenie B)")
         else:
             self.network = None
-        if self.congig_menu.mode == "Singleplayer":
-            self.turn = "green"
+        if self.congig_menu.mode == "Singleplayer" and self.turn == "red":
+            new_move = suggest_best_move(self.cells, self.turn)
+            if new_move:
+                self.last_turn = self.turn
+                self.selected_cell, defender = new_move
+                self.selected_cell, self.turn = merge(self.attacks, self.selected_cell, defender, self.turn)
+                self.update_turn_display()
+                self.scene.update()
         else:
             if self.last_turn != self.turn:
                 self.reset_timer()
