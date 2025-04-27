@@ -20,7 +20,7 @@ def suggest_best_move(cells, turn):
             if target.color != turn:
                 score = target.hp - distance
             else:
-                score = -target.hp - distance
+                score = 0.9*target.hp - distance
 
             if score > best_score:
                 best_score = score
